@@ -12,9 +12,9 @@ def make_floor_plan():
     #add x for the isles
     for row in range(7):
         if row == 3:
-            floor_plan.append("X" * 80) #80 column
+            floor_plan.append(["X"] * 80) #80 column
         else:
-            floor_plan.append("F" * 80) 
+            floor_plan.append(["F"] * 80) 
     
     #add S for storage
     for row in [4,5,6]:
@@ -22,3 +22,4 @@ def make_floor_plan():
         floor_plan[row][77] = "S"
     
     return floor_plan
+print(make_floor_plan())
