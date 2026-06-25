@@ -24,6 +24,26 @@ def make_floor_plan():
     return floor_plan
 floor_plan = make_floor_plan()
 
+def option_4(floor_plan):
+    print("==========Burak757 Floor Plan==========")
+    
+    print("            ",end="")
+    for column in range(10,81,10):
+        print(column,"       ",end="")
+    print()
+        
+    rows = ["A","B","C","X","D","E","F"]
+        
+    for i in range(7):
+        letter = rows[i]
+            
+        print(letter,"|", end = "")
+            
+        for seat in floor_plan[i]:
+            print(seat, end = "")
+                
+    print("==============================")
+
 #make main menu
 while True: #keep loop till break in option 5
     print("---Apache Airline Seat Booking System---")
@@ -46,9 +66,14 @@ while True: #keep loop till break in option 5
         
     elif choice == "4":
         print("\n[Showing floor plan and booking status.]\n")
+        option_4(floor_plan)
         
     elif choice == "5":
         print("\n[Exiting program. Thank You for choosing Apache Airlines.]\n")
         break
     else:
         print("\n[Invaild choice. Please input a number (1 - 5).]\n") #for inputs beside 1-5
+    
+    
+    
+    
