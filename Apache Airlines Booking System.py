@@ -23,54 +23,90 @@ def make_floor_plan():
     
     return floor_plan
 floor_plan = make_floor_plan()
-booked_seats = [] #global variable
+
+#global variables
+booked_seats = [] 
+passengers_booked_seats = {} 
+
 #translor row letter into row index number
 row_translator = {"A": 0, "B": 1, "C":2, "D":4, "E": 5, "F": 6} 
 
+def check_input(seat_input):
+        
+    column_string = seat_input[:-1]
+    row_letter = seat_input[-1]
+        
+    #check row is between A to F and column is number
+    if not column_string.isdigit() or row_letter not in row_translator:
+        print("\nInvalid input. Rows is A-F and column is number of 1-80.(e.g. 1A)\n")
+        return #return to keep loop
+        
+    #check column number is in range of 1 to 80 or not
+    col_num = int(column_string)
+        
+    if col_num < 1 or col_num > 80:
+        print("\nInvalid column number. Column should be between 1 to 80.\n")
+        return #return to keep loop
+        
+    #convert row letter and column into python style
+    row = row_translator[row_letter]
+    column = col_num - 1
+    return row, column
+    
 def option_1(floor_plan):
     print("1. Search by seat coordinate.")
     print("2. Search by passenger name.")
     sec_choice = input("Select an option: ")
     
     if sec_choice == "1":
-        seat_input = input("Please enter a seat to check: ").upper()
+        seat_input = input("Please enter a seat to check: ").upper().strip()
+
+        row, column = check_input(seat_input)
         
-        column_string = seat_input[:-1]
-        row_letter = seat_input[-1]
+        status = floor_plan[row][column]
         
-        #check row is between A to F and column is number
-        if not column_string.isdigit() or row_letter not in row_translator:
-            print("\nInvalid input. Rows is A-F and column is number of 1-80.(e.g. 1A)\n")
-            return #return to keep loop
-        
-        #check column number is in range of 1 to 80 or not
-        col_num = int(column_string)
-        
-        if col_num < 1 or col_num > 80:
-            print("\nInvalid column number. Column should be between 1 to 80.\n")
-            return #return to keep loop
-        
-        #convert row letter and column into python style
-        row = row_translator[row_letter]
-        column = col_num - 1
-        
-        book_or_not = floor_plan[row][column]
-        
-        if book_or_not == "F":
+        if status == "F":
             print(f"\n{seat_input} is available to book.\n")
-        elif book_or_not == "R":
+        elif status == "R":
             print(f"\n{seat_input} is booked.\n")
-        elif book_or_not == "S":
+        elif status == "S":
             print(f"\n{seat_input} is a storage area that cannot be booked.\n")
-        elif book_or_not == "X":
+        elif status == "X":
             print(f"\n{seat_input} is an isles that cannot be booked.\n")
 #wait for option 2 and 3 
 '''
     if sec_choice == "2":
         name = input("Please enter passenger name: ")
 '''
-
-
+def option_2(floor_plan):
+    seat_input = input("Please enter a seat to check: ").upper().strip()
+    
+    row, column = check_input(seat_input)
+    
+    status = floor_plan[row][column]
+    
+    if status == "R":
+        print(f"\n{seat_input} is already booked by another passenger.\n")
+    elif status == "S":
+        print(f"\n{seat_input} is a storage area that cannot be booked.\n")
+    elif status == "X":
+        print(f"\n{seat_input} is an isles that cannot be booked.\n")
+    elif status == "F":
+        name = input("Please enter pasenger's name: ").strip().title()
+        
+        if name == "":
+            print("Missing Input. Please try again.")
+            return
+        
+        floor_plan[row][column] = "R"
+        
+        #save information to global variables
+        booked_seats.append(seat_input)
+        passengers_booked_seats[name] = seat_input
+        
+        #success message
+        print(f"\n{seat_input} has been booked by {name}.\n")
+    
 
 def option_4(floor_plan):
     #summary of booked seats
@@ -118,6 +154,7 @@ while True: #keep loop till break in option 5
         
     elif choice == "2":
         print("\n[Booking a seat.]\n")
+        option_2(floor_plan)
         
     elif choice == "3":
         print("\n[Freeing a seat.]\n")
