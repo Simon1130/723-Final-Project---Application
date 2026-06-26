@@ -24,26 +24,30 @@ def make_floor_plan():
     return floor_plan
 floor_plan = make_floor_plan()
 
-booked_seats = []
+booked_seats = [] #global variable
 
 def option_4(floor_plan):
+    #summary of booked seats
     print("\nBooked Seats: ", ", ".join(booked_seats),"\n")
     
     print("====================================Burak757 Floor Plan===================================")
     
-    print("            ",end="")
-    for column in range(10,81,10):
+    #end="" is used to make the output stay in the same sentence
+    print("            ",end="") 
+    
+    for column in range(10,81,10):#frequency of 10 because the output console is too small
         print(column,"       ",end="")
     print()
         
+    #making character for every row
     rows = ["A","B","C","X","D","E","F"]
         
     for i in range(7):
         letter = rows[i]
             
-        print(letter,"|", end = "")
+        print(letter,"|", end = "") #seperate row character with seat
             
-        for seat in floor_plan[i]:
+        for seat in floor_plan[i]: #print the seat from the floor plan maked above
             print(seat, end = "")
                 
         print()
@@ -51,8 +55,6 @@ def option_4(floor_plan):
     print("=" * 90)
     print()
 
-
-    
 #make main menu
 while True: #keep loop till break in option 5
     print("---Apache Airline Seat Booking System---")
