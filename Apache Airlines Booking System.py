@@ -74,10 +74,14 @@ def option_1(floor_plan):
         elif status == "X":
             print(f"\n{seat_input} is an isles that cannot be booked.\n")
 #wait for option 2 and 3 
-'''
+
     if sec_choice == "2":
-        name = input("Please enter passenger name: ")
-'''
+        name = input("Please enter passenger name: ").strip().title()
+        if name in passengers_booked_seats:
+            print(f"\n{name} has booked seat {passengers_booked_seats[name]}.\n")
+        else:
+            print("\nNo bookings were found.\n")
+
 def option_2(floor_plan):
     seat_input = input("Please enter a seat to check: ").upper().strip()
     
