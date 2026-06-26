@@ -24,8 +24,12 @@ def make_floor_plan():
     return floor_plan
 floor_plan = make_floor_plan()
 
+booked_seats = []
+
 def option_4(floor_plan):
-    print("==========Burak757 Floor Plan==========")
+    print("\nBooked Seats: ", ", ".join(booked_seats),"\n")
+    
+    print("====================================Burak757 Floor Plan===================================")
     
     print("            ",end="")
     for column in range(10,81,10):
@@ -42,8 +46,13 @@ def option_4(floor_plan):
         for seat in floor_plan[i]:
             print(seat, end = "")
                 
-    print("==============================")
+        print()
 
+    print("=" * 90)
+    print()
+
+
+    
 #make main menu
 while True: #keep loop till break in option 5
     print("---Apache Airline Seat Booking System---")
