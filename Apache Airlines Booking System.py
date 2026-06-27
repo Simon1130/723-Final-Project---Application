@@ -75,12 +75,19 @@ def option_1(floor_plan):
             print(f"\n{seat_input} is an isles that cannot be booked.\n")
 #wait for option 2 and 3 
 
-    if sec_choice == "2":
+    elif sec_choice == "2":
         name = input("Please enter passenger name: ").strip().title()
+        
         if name in passengers_booked_seats:
-            print(f"\n{name} has booked seat {passengers_booked_seats[name]}.\n")
+            booked_list = passengers_booked_seats[name]
+            clean_list = ", ".join(booked_list)
+            
+            print(f"\n{name} has booked seat(s): {clean_list}.\n")
         else:
             print("\nNo bookings were found.\n")
+    else:
+        print("\nInvalid Option. Please try again with option 1 and 2.\n")
+        return 
 
 def option_2(floor_plan):
     seat_input = input("Please enter a seat to check: ").upper().strip()
@@ -105,8 +112,12 @@ def option_2(floor_plan):
         floor_plan[row][column] = "R"
         
         #save information to global variables
-        booked_seats.append(seat_input)
-        passengers_booked_seats[name] = seat_input
+        booked_seats.append(seat_input.upper().strip())
+        
+        if name in passengers_booked_seats:
+            passengers_booked_seats[name].append(seat_input.upper().strip())
+        else:#create a list if no booking are done before
+            passengers_booked_seats[name] = [seat_input.upper().strip()]
         
         #success message
         print(f"\n{seat_input} has been booked by {name}.\n")
@@ -171,7 +182,7 @@ while True: #keep loop till break in option 5
         print("\n[Exiting program. Thank You for choosing Apache Airlines.]\n")
         break
     else:
-        print("\n[Invaild choice. Please input a number (1 - 5).]\n") #for inputs beside 1-5
+        print("\n[Invalid choice. Please input a number (1 - 5).]\n") #for inputs beside 1-5
     
     
     
