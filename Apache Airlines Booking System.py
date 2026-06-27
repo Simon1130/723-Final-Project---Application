@@ -39,14 +39,15 @@ def check_input(seat_input):
     #check row is between A to F and column is number
     if not column_string.isdigit() or row_letter not in row_translator:
         print("\nInvalid input. Rows is A-F and column is number of 1-80.(e.g. 1A)\n")
-        return #return to keep loop
+        #two None is used to prevent error
+        return None, None #return to keep loop
         
     #check column number is in range of 1 to 80 or not
     col_num = int(column_string)
         
     if col_num < 1 or col_num > 80:
         print("\nInvalid column number. Column should be between 1 to 80.\n")
-        return #return to keep loop
+        return None, None #return to keep loop
         
     #convert row letter and column into python style
     row = row_translator[row_letter]
@@ -62,6 +63,9 @@ def option_1(floor_plan):
         seat_input = input("Please enter a seat to check: ").upper().strip()
 
         row, column = check_input(seat_input)
+        
+        if row is None:
+            return
         
         status = floor_plan[row][column]
         
@@ -94,6 +98,8 @@ def option_2(floor_plan):
     seat_input = input("Please enter a seat to book: ").upper().strip()
     
     row, column = check_input(seat_input)
+    if row is None:
+        return
     
     status = floor_plan[row][column]
     
@@ -127,8 +133,10 @@ def option_2(floor_plan):
 def option_3(floor_plan):
     seat_input = input("Please enter a seat to free: ").upper().strip()
     
-    row, column = check_input(seat_input)
-    
+    row, column = check_input(seat_input)    
+    if row is None:
+        return
+        
     status = floor_plan[row][column]
     
     if status == "F":
@@ -140,7 +148,7 @@ def option_3(floor_plan):
     elif status == "R":
         name = input(f"Please enter pasenger's name that book {seat_input}: ").strip().title()
         
-        if seat_input not in passengers_booked_seats[name]:
+        if name not in passengers_booked_seats or seat_input not in passengers_booked_seats[name]:
             print(f"\nError. {name} did not book {seat_input}.\n")
             return
         
@@ -154,6 +162,9 @@ def option_3(floor_plan):
             booked_seats.remove(seat_input)
         
         passengers_booked_seats[name].remove(seat_input)
+        
+        if len(passengers_booked_seats[name]) == 0:
+            del passengers_booked_seats[name]
             
         print(f"\nBooking of {seat_input} has remove from {name}.\n")
 
