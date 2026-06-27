@@ -73,10 +73,11 @@ def option_1(floor_plan):
             print(f"\n{seat_input} is a storage area that cannot be booked.\n")
         elif status == "X":
             print(f"\n{seat_input} is an isles that cannot be booked.\n")
-#wait for option 2 and 3 
 
     elif sec_choice == "2":
-        name = input("Please enter passenger name: ").strip().title()
+        #strip() used to remove unnessacry space
+        #title() used to upper the first character of the name
+        name = input("Please enter passenger name: ").strip().title() 
         
         if name in passengers_booked_seats:
             booked_list = passengers_booked_seats[name]
@@ -90,7 +91,7 @@ def option_1(floor_plan):
         return 
 
 def option_2(floor_plan):
-    seat_input = input("Please enter a seat to check: ").upper().strip()
+    seat_input = input("Please enter a seat to book: ").upper().strip()
     
     row, column = check_input(seat_input)
     
@@ -106,9 +107,10 @@ def option_2(floor_plan):
         name = input("Please enter pasenger's name: ").strip().title()
         
         if name == "":
-            print("Missing Input. Please try again.")
+            print("\nMissing Input. Please try again.\n")
             return
         
+        #change that coordinate to booked
         floor_plan[row][column] = "R"
         
         #save information to global variables
@@ -121,7 +123,39 @@ def option_2(floor_plan):
         
         #success message
         print(f"\n{seat_input} has been booked by {name}.\n")
+        
+def option_3(floor_plan):
+    seat_input = input("Please enter a seat to free: ").upper().strip()
     
+    row, column = check_input(seat_input)
+    
+    status = floor_plan[row][column]
+    
+    if status == "F":
+        print(f"\n{seat_input} is already free.\n")
+    elif status == "S":
+        print(f"\n{seat_input} is a storage area that cannot be booked.\n")
+    elif status == "X":
+        print(f"\n{seat_input} is an isles that cannot be booked.\n")
+    elif status == "R":
+        name = input(f"Please enter pasenger's name that book {seat_input}: ").strip().title()
+        
+        if seat_input not in passengers_booked_seats[name]:
+            print(f"\nError. {name} did not book {seat_input}.\n")
+            return
+        
+        if name == "":
+            print("\nMissing Input. Please try again.\n")
+            return
+        #change that coordinate to free
+        floor_plan[row][column] = "F"
+        
+        if seat_input in booked_seats:
+            booked_seats.remove(seat_input)
+        
+        passengers_booked_seats[name].remove(seat_input)
+            
+        print(f"\nBooking of {seat_input} has remove from {name}.\n")
 
 def option_4(floor_plan):
     #summary of booked seats
@@ -173,6 +207,7 @@ while True: #keep loop till break in option 5
         
     elif choice == "3":
         print("\n[Freeing a seat.]\n")
+        option_3(floor_plan)
         
     elif choice == "4":
         print("\n[Showing floor plan and booking status.]\n")
