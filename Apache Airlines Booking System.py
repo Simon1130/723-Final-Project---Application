@@ -54,6 +54,21 @@ def check_input(seat_input):
     column = col_num - 1
     return row, column
     
+def cal_seat_price(row_letter,col_num):
+    #using row as letter to look through storage
+    if row_letter in ['D', 'E', 'F'] and col_num in [77,78]:
+        return 0 
+    if row_letter == 'X':
+        return 0
+    
+    if 1 <= col_num <= 3:
+        return 250
+    elif 4 <= col_num <= 5:
+        return 200
+    else:
+        return 100
+    
+
 def option_1(floor_plan):
     print("1. Search by seat coordinate.")
     print("2. Search by passenger name.")
@@ -110,6 +125,12 @@ def option_2(floor_plan):
     elif status == "X":
         print(f"\n{seat_input} is an isles that cannot be booked.\n")
     elif status == "F":
+        row_letter = seat_input[-1]
+        col_num = int(seat_input[:-1])
+        
+        ticket_price = cal_seat_price(row_letter, col_num)
+        print(f"\nPrice of {seat_input} is £{ticket_price}.\n")
+        
         name = input("Please enter pasenger's name: ").strip().title()
         
         if name == "":
@@ -203,7 +224,7 @@ while True: #keep loop till break in option 5
     print("1. Check availability of seat")
     print("2. Book a seat")
     print("3. Free a seat")
-    print("4. Show booking status")
+    print("4. Show floor plan & booking status")
     print("5. Exit program")
     
     choice = input("Please select an option from 1 to 5: ") #get choice from user
