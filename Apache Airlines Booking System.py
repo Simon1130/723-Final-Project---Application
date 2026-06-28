@@ -5,6 +5,23 @@ Created on Tue Jun 23 23:49:23 2026
 
 @author: simon
 """
+import random
+import string
+
+reference = set()
+def booking_reference():
+    
+    #from builtin string, gets all letter and digits and save it into variable
+    all_characters = string.ascii_uppercase + string.digits
+    
+    while True:
+        #builtin random is used to randomly choose 8 elements from k, .join to store into a string
+        test_reference = ''.join(random.choice(all_characters,k=8))#k is the length of elemnets 
+        
+        if test_reference not in reference:
+            reference.add(test_reference)
+            return test_reference
+        
 
 def make_floor_plan():
     floor_plan = []
