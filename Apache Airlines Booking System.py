@@ -48,8 +48,11 @@ class Apache_airline_Burak757_booking_system:
         
         while True:
             #builtin random is used to randomly choose 8 elements from k, .join to store into a string
-            test_reference = ''.join(random.choice(all_characters,k=8))#k is the length of elemnets 
-
+            test_reference = ''.join(random.choices(all_characters,k=8))#k is the length of elemnets 
+            cursor.execute("SELECT 1 FROM passenger_book WHERE reference = ?", (test_reference,)) #comma is used to make it a tuple
+            if cursor.fetchone() is None:
+                conn.close()
+                return test_reference
             
             if test_reference not in self.reference:
                 self.reference.add(test_reference)
@@ -96,7 +99,7 @@ class Apache_airline_Burak757_booking_system:
         column = col_num - 1
         return row, column
         
-    def cal_seat_price(row_letter,col_num):
+    def cal_seat_price(self,row_letter,col_num):
         #using row as letter to look through storage
         if row_letter in ['D', 'E', 'F'] and col_num in [77,78]:
             return 0 
@@ -111,7 +114,7 @@ class Apache_airline_Burak757_booking_system:
             return 100
         
     
-    def option_1(self,floor_plan):
+    def option_1(self):
         print("1. Search by seat coordinate.")
         print("2. Search by passenger name.")
         sec_choice = input("Select an option: ")
@@ -124,7 +127,7 @@ class Apache_airline_Burak757_booking_system:
             if row is None:
                 return
             
-            status = floor_plan[row][column]
+            status = self.floor_plan[row][column]
             
             if status == "F":
                 print(f"\n{seat_input} is available to book.\n")
@@ -151,14 +154,14 @@ class Apache_airline_Burak757_booking_system:
             print("\nInvalid Option. Please try again with option 1 and 2.\n")
             return 
     
-    def option_2(self,floor_plan):
+    def option_2(self):
         seat_input = input("Please enter a seat to book: ").upper().strip()
         
         row, column = self.check_input(seat_input)
         if row is None:
             return
         
-        status = floor_plan[row][column]
+        status = self.floor_plan[row][column]
         
         if status == "R":
             print(f"\n{seat_input} is already booked by another passenger.\n")
@@ -180,7 +183,7 @@ class Apache_airline_Burak757_booking_system:
                 return
             
             #change that coordinate to booked
-            floor_plan[row][column] = "R"
+            self.floor_plan[row][column] = "R"
             
             #save information to global variables
             self.booked_seats.append(seat_input.upper().strip())
@@ -193,14 +196,14 @@ class Apache_airline_Burak757_booking_system:
             #success message
             print(f"\n{seat_input} has been booked by {name}.\n")
             
-    def option_3(self, floor_plan):
+    def option_3(self):
         seat_input = input("Please enter a seat to free: ").upper().strip()
         
         row, column = self.check_input(seat_input)    
         if row is None:
             return
             
-        status = floor_plan[row][column]
+        status = self.floor_plan[row][column]
         
         if status == "F":
             print(f"\n{seat_input} is already free.\n")
@@ -219,7 +222,7 @@ class Apache_airline_Burak757_booking_system:
                 print("\nMissing Input. Please try again.\n")
                 return
             #change that coordinate to free
-            floor_plan[row][column] = "F"
+            self.floor_plan[row][column] = "F"
             
             if seat_input in self.booked_seats:
                 self.booked_seats.remove(seat_input)
@@ -231,7 +234,7 @@ class Apache_airline_Burak757_booking_system:
                 
             print(f"\nBooking of {seat_input} has remove from {name}.\n")
     
-    def option_4(self, floor_plan):
+    def option_4(self):
         #summary of booked seats
         print("\nBooked Seats: ", ", ".join(self.booked_seats),"\n")
         
@@ -252,7 +255,7 @@ class Apache_airline_Burak757_booking_system:
                 
             print(letter,"|", end = "") #seperate row character with seat
                 
-            for seat in floor_plan[i]: #print the seat from the floor plan maked above
+            for seat in self.floor_plan[i]: #print the seat from the floor plan maked above
                 print(seat, end = "")
                     
             print()
@@ -293,7 +296,7 @@ class Apache_airline_Burak757_booking_system:
                 break
             else:
                 print("\n[Invalid choice. Please input a number (1 - 5).]\n") #for inputs beside 1-5
-            
-        
-        
-        
+
+if __name__ == "__main__":
+    app = Apache_airline_Burak757_booking_system()
+    app.run()
