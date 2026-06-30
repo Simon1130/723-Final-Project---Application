@@ -18,6 +18,8 @@ class Apache_airline_Burak757_booking_system:
         self.booked_seats = [] 
         self.floor_plan = self.make_floor_plan()
         self.init_database()
+        #load previous db if have
+        self.load_db()
         
     def init_database(self):
         #connect to db
@@ -39,7 +41,33 @@ class Apache_airline_Burak757_booking_system:
         ''')
         conn.commit()
         conn.close()
-
+    
+    def load_db(self):
+        #connect to db
+        conn = sqlite3.connect(self.db)
+        cursor = conn.cursor()
+        
+        #only seats who has booked will have value
+        cursor.execute("SELECT reference, row, column FROM passengers_booked_seats")
+        all_bookings = cursor.fetchall()#a list containing info of reference, row and column
+        
+        for booking in all_bookings:
+            #ref could be the status or reference
+            ref = booking[0]#since reference is the first to mention in SQL command
+            row_letter = booking[1]
+            col_num = booking[2]
+            
+            #translate to floor plan coordinate
+            row = self.row_translator[row_letter]
+            col = col_num - 1
+            
+            self.floor_plan[row][col] = ref 
+            
+            seat = f"{col_num}{row_letter}"
+            self.booked_seats.append(seat)
+        
+        conn.close()
+    
     def booking_reference(self):
         
         #from builtin string, gets all letter and digits and save it into variable
@@ -243,7 +271,7 @@ class Apache_airline_Burak757_booking_system:
         else: #since the status is not R anymore
             print(f"The seat has booked with the booking reference: {status}")
             #check it by passport number instead of name
-            check_passport = input("Please enter passenger's Passport Number to canel booking: ").strip.upper()
+            check_passport = input("Please enter passenger's Passport Number to canel booking: ").strip().upper()
             
             #connect to db
             conn = sqlite3.connect(self.db)
@@ -259,7 +287,7 @@ class Apache_airline_Burak757_booking_system:
             
             first_name, last_name = passenger
             #delete the data from db
-            cursor.execute("DELETE FROM passengers_booked_seats WHERE reference = ?", (status))
+            cursor.execute("DELETE FROM passengers_booked_seats WHERE reference = ?", (status,))
             conn.commit()
             conn.close()
             
