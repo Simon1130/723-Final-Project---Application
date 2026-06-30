@@ -16,15 +16,16 @@ class Apache_airline_Burak757_booking_system:
         self.row_translator = {"A": 0, "B": 1, "C":2, "D":4, "E": 5, "F": 6} 
 
         self.booked_seats = [] 
-        self.passengers_booked_seats = {} 
         self.floor_plan = self.make_floor_plan()
         self.init_database()
-        self.reference = set()
         
-    
     def init_database(self):
-        conn = sqlite3.connect("apache_airline_Burak757.db")
+        #connect to db
+        conn = sqlite3.connect(self.db)
         cursor = conn.cursor()
+        
+        #reference is the unique primary key
+        #passport_num is text since it may combine with letter and digits
         
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS passengers_booked_seats (
@@ -43,21 +44,18 @@ class Apache_airline_Burak757_booking_system:
         
         #from builtin string, gets all letter and digits and save it into variable
         all_characters = string.ascii_uppercase + string.digits
-        conn = sqlite3.connect("apache_airline_Burak757.db")
+        #connect to db
+        conn = sqlite3.connect(self.db)
         cursor = conn.cursor()
         
         while True:
             #builtin random is used to randomly choose 8 elements from k, .join to store into a string
             test_reference = ''.join(random.choices(all_characters,k=8))#k is the length of elemnets 
-            cursor.execute("SELECT 1 FROM passenger_book WHERE reference = ?", (test_reference,)) #comma is used to make it a tuple
-            if cursor.fetchone() is None:
+            cursor.execute("SELECT 1 FROM passengers_booked_seats WHERE reference = ?", (test_reference,)) #comma is used to make it a tuple
+            #fetchone() means taking the result from the db
+            if cursor.fetchone() is None: #if NONE means it is unique
                 conn.close()
-                return test_reference
-            
-            if test_reference not in self.reference:
-                self.reference.add(test_reference)
-                return test_reference
-            
+                return test_reference          
     
     def make_floor_plan(self):
         floor_plan = []
@@ -131,7 +129,7 @@ class Apache_airline_Burak757_booking_system:
             
             if status == "F":
                 print(f"\n{seat_input} is available to book.\n")
-            elif status == "R":
+            elif status not in ["F", "S", "X"]: #Because R is changed into reference number
                 print(f"\n{seat_input} is booked.\n")
             elif status == "S":
                 print(f"\n{seat_input} is a storage area that cannot be booked.\n")
@@ -141,19 +139,31 @@ class Apache_airline_Burak757_booking_system:
         elif sec_choice == "2":
             #strip() used to remove unnessacry space
             #title() used to upper the first character of the name
-            name = input("Please enter passenger name: ").strip().title() 
+            first_name = input("Please enter passenger's First Name: ").strip().title()
+            last_name = input("Please enter passenger's Last Name: ").strip().title()
             
-            if name in self.passengers_booked_seats:
-                booked_list = self.passengers_booked_seats[name]
-                clean_list = ", ".join(booked_list)
-                
-                print(f"\n{name} has booked seat(s): {clean_list}.\n")
+            #connect to db
+            conn = sqlite3.connect(self.db)
+            cursor = conn.cursor()
+            
+            #get data from db to find matches 
+            #? as variables, then give the value of it in the later ()
+            cursor.execute("SELECT column,row FROM passengers_booked_seats WHERE firstname = ? AND lastname = ?", (first_name, last_name))
+            
+            all_bookings = cursor.fetchall() #take all bookings of that guy
+            conn.close()
+            
+            if len(all_bookings) > 0:
+                #joining seats into a clean format
+                booking_list = ", ".join(f"{seat[0]}{seat[1]}" for seat in all_bookings)
+                print(f"\n{first_name}{last_name} has boked seat(s): {booking_list}.\n")
             else:
                 print("\nNo bookings were found.\n")
+
         else:
             print("\nInvalid Option. Please try again with option 1 and 2.\n")
             return 
-    
+
     def option_2(self):
         seat_input = input("Please enter a seat to book: ").upper().strip()
         
@@ -163,7 +173,7 @@ class Apache_airline_Burak757_booking_system:
         
         status = self.floor_plan[row][column]
         
-        if status == "R":
+        if status not in ["F", "S", "X"]: #Because R is changed into reference number
             print(f"\n{seat_input} is already booked by another passenger.\n")
         elif status == "S":
             print(f"\n{seat_input} is a storage area that cannot be booked.\n")
@@ -173,28 +183,46 @@ class Apache_airline_Burak757_booking_system:
             row_letter = seat_input[-1]
             col_num = int(seat_input[:-1])
             
+            print(f"\n{seat_input} is free to book.")
             ticket_price = self.cal_seat_price(row_letter, col_num)
-            print(f"\nPrice of {seat_input} is £{ticket_price}.\n")
+            print(f"Price of {seat_input} is £{ticket_price}.\n")
             
-            name = input("Please enter pasenger's name: ").strip().title()
+            first_name = input("Please enter pasenger's First Name: ").strip().title()
+            last_name = input("Please enter pasenger's Last Name: ").strip().title()
+            passport = input("Please enter pasenger's Passport Number: ").strip().upper()
             
-            if name == "":
-                print("\nMissing Input. Please try again.\n")
+            if first_name == "" or last_name == "" or passport == "":
+                print("\nThere are missing Input. Please try again.\n")
                 return
             
-            #change that coordinate to booked
-            self.floor_plan[row][column] = "R"
+            ref = self.booking_reference()
+            
+            #connect to db
+            conn = sqlite3.connect(self.db)
+            cursor = conn.cursor()
+            
+            #insert that passengers detail into db
+            cursor.execute('''
+                           INSERT INTO passengers_booked_seats(
+                               reference, firstname, lastname, passport_num, row, column)
+                           VALUES (?,?,?,?,?,?)
+                           ''', 
+                           (ref, first_name, last_name, passport, row_letter, col_num)
+                           )
+            
+            conn.commit()
+            conn.close()
+            
+
+            #change that coordinate to reference
+            self.floor_plan[row][column] = ref
             
             #save information to global variables
             self.booked_seats.append(seat_input.upper().strip())
-            
-            if name in self.passengers_booked_seats:
-                self.passengers_booked_seats[name].append(seat_input.upper().strip())
-            else:#create a list if no booking are done before
-                self.passengers_booked_seats[name] = [seat_input.upper().strip()]
-            
+                        
             #success message
-            print(f"\n{seat_input} has been booked by {name}.\n")
+            print(f"\n{seat_input} has been booked by {first_name} {last_name}.\n")
+            print(f"Reference of this booking is: {ref}\n")
             
     def option_3(self):
         seat_input = input("Please enter a seat to free: ").upper().strip()
@@ -211,28 +239,39 @@ class Apache_airline_Burak757_booking_system:
             print(f"\n{seat_input} is a storage area that cannot be booked.\n")
         elif status == "X":
             print(f"\n{seat_input} is an isles that cannot be booked.\n")
-        elif status == "R":
-            name = input(f"Please enter pasenger's name that book {seat_input}: ").strip().title()
             
-            if name not in self.passengers_booked_seats or seat_input not in self.passengers_booked_seats[name]:
-                print(f"\nError. {name} did not book {seat_input}.\n")
-                return
+        else: #since the status is not R anymore
+            print(f"The seat has booked with the booking reference: {status}")
+            #check it by passport number instead of name
+            check_passport = input("Please enter passenger's Passport Number to canel booking: ").strip.upper()
             
-            if name == "":
-                print("\nMissing Input. Please try again.\n")
-                return
+            #connect to db
+            conn = sqlite3.connect(self.db)
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT firstname, lastname FROM passengers_booked_seats WHERE reference = ? AND passport_num = ?", (status, check_passport))
+            passenger = cursor.fetchone()
+            
+            if passenger is None:
+                print("\nError. Passport number does not match.\n")
+                conn.close()
+                return 
+            
+            first_name, last_name = passenger
+            #delete the data from db
+            cursor.execute("DELETE FROM passengers_booked_seats WHERE reference = ?", (status))
+            conn.commit()
+            conn.close()
+            
+
             #change that coordinate to free
             self.floor_plan[row][column] = "F"
             
             if seat_input in self.booked_seats:
                 self.booked_seats.remove(seat_input)
             
-            self.passengers_booked_seats[name].remove(seat_input)
-            
-            if len(self.passengers_booked_seats[name]) == 0:
-                del self.passengers_booked_seats[name]
                 
-            print(f"\nBooking of {seat_input} has remove from {name}.\n")
+            print(f"\nBooking of {seat_input} has remove from {first_name} {last_name}.\n")
     
     def option_4(self):
         #summary of booked seats
@@ -256,7 +295,11 @@ class Apache_airline_Burak757_booking_system:
             print(letter,"|", end = "") #seperate row character with seat
                 
             for seat in self.floor_plan[i]: #print the seat from the floor plan maked above
-                print(seat, end = "")
+                #change the Reference back to R since it will break the layout of the floor plan
+                if len(seat) == 8: 
+                    print("R", end = "")
+                else:    
+                    print(seat, end = "")
                     
             print()
     
@@ -300,3 +343,7 @@ class Apache_airline_Burak757_booking_system:
 if __name__ == "__main__":
     app = Apache_airline_Burak757_booking_system()
     app.run()
+    
+    
+    
+    
